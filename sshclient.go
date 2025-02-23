@@ -306,6 +306,22 @@ func (rs *RemoteScript) SmartOutput() ([]byte, error) {
 	return stdout.Bytes(), err
 }
 
+// CombinedOutput runs the script on the client and returns its combined standard output and standard error.
+func (rs *RemoteScript) CombinedOutput() ([]byte, error) {
+	if rs.stdout != nil {
+		return nil, errors.New("Stdout already set")
+	}
+	if rs.stderr != nil {
+		return nil, errors.New("Stderr already set")
+	}
+
+	var b singleWriter
+	rs.stdout = &b
+	rs.stderr = &b
+	err := rs.Run()
+	return b.b.Bytes(), err
+}
+
 // Cmd appends a command to the RemoteScript.
 func (rs *RemoteScript) Cmd(cmd string) *RemoteScript {
 	_, err := rs.script.WriteString(cmd + "\n")
